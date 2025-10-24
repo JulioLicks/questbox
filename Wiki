@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wiki do Questbox - Sistema Gamificado de Projetos</title>
+    <style>
+        /* === ESTILO GERAL === */
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            background: #f8f9fa; 
+            color: #333; 
+            line-height: 1.7;
+        }
+        h1, h2, h3 { color: #2c3e50; }
+        a { color: #e67e22; text-decoration: none; font-weight: bold; }
+        a:hover { text-decoration: underline; }
+
+        /* === HEADER FIXO COM ÍNDICE === */
+        header {
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 15px 20px;
+            border-bottom: 3px solid #e67e22;
+            transition: border-bottom-color 0.3s ease;
+        }
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .logo-title h1 { margin: 0; font-size: 1.8em; color: #000; }
+        .logo-title p { margin: 5px 0 0; font-size: 0.95em; color: #7f8c8d; }
+
+        .index-nav {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            font-size: 0.9em;
+        }
+        .index-nav a {
+            background: #f8f9fa;
+            color: #000;
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            transition: all 0.2s;
+            white-space: nowrap;
+            font-weight: bold;
+        }
+
+        /* HOVER: MUDAR COR DA BORDA DO HEADER + BOTÃO */
+        .index-nav a:hover {
+            color: white !important;
+        }
+        .index-nav a[href="#matriz"]:hover ~ header,
+        .index-nav a[href="#matriz"]:hover { border-bottom-color: #e67e22; }
+        .index-nav a[href="#ajuda"]:hover ~ header,
+        .index-nav a[href="#ajuda"]:hover { border-bottom-color: #f39c12; background: #f39c12 !important; }
+        .index-nav a[href="#desafio"]:hover ~ header,
+        .index-nav a[href="#desafio"]:hover { border-bottom-color: #27ae60; background: #27ae60 !important; }
+        .index-nav a[href="#gerenciamento"]:hover ~ header,
+        .index-nav a[href="#gerenciamento"]:hover { border-bottom-color: #9b59b6; background: #9b59b6 !important; }
+        .index-nav a[href="#diagnostico"]:hover ~ header,
+        .index-nav a[href="#diagnostico"]:hover { border-bottom-color: #e74c3c; background: #e74c3c !important; }
+        .index-nav a[href="#planejamento"]:hover ~ header,
+        .index-nav a[href="#planejamento"]:hover { border-bottom-color: #f1c40f; background: #f1c40f !important; }
+        .index-nav a[href="#realizacao"]:hover ~ header,
+        .index-nav a[href="#realizacao"]:hover { border-bottom-color: #1e88e5; background: #1e88e5 !important; }
+
+        /* === CONTEÚDO PRINCIPAL === */
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 15px; }
+
+        /* === MATRIZ HORIZONTAL - RESPONSIVA === */
+        .matrix-container {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+            margin: 30px 0;
+            text-align: center;
+            overflow-x: auto;
+        }
+        .matrix-title {
+            font-size: 1.4em;
+            margin-bottom: 18px;
+            color: #2c3e50;
+            font-weight: bold;
+        }
+        .matrix-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            min-width: 100%;
+        }
+        .matrix-row {
+            display: flex;
+            gap: 16px;
+            justify-content: flex-start;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            padding: 8px 0;
+            scrollbar-width: thin;
+        }
+        .matrix-row::-webkit-scrollbar {
+            height: 6px;
+        }
+        .matrix-row::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+        .matrix-row::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 3px;
+        }
+        .matrix-cell {
+            min-width: 50px;
+            width: 50px;
+            height: 50px;
+            line-height: 50px;
+            text-align: center;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            font-size: 0.85em;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .matrix-cell:hover {
+            transform: scale(1.15);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+            z-index: 10;
+        }
+        .cat-ajuda { background: #f39c12; color: white; }
+        .cat-desafio { background: #27ae60; color: white; }
+        .cat-gerenciamento { background: #9b59b6; color: white; }
+        .cat-diagnostico { background: #e74c3c; color: white; }
+        .cat-planejamento { background: #f1c40f; color: white; }
+        .cat-realizacao { background: #1e88e5; color: white; }
+
+        /* === CARD DETALHADO RESPONSIVO === */
+        .card-detail {
+            display: none;
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+            margin: 30px 0;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .card-detail.active { display: block; }
+
+        .card-header {
+            padding: 16px;
+            color: white;
+            font-weight: bold;
+            font-size: 1.3em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: nowrap;
+            gap: 12px;
+            position: relative;
+        }
+        .card-header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+        .code-circle {
+            width: 48px; 
+            height: 48px; 
+            line-height: 48px;
+            border-radius: 50%; 
+            background: white; 
+            color: #000;
+            text-align: center; 
+            font-weight: bold;
+            font-size: 0.85em;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .card-title-text {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: calc(100% - 60px);
+        }
+
+        .close-card {
+            background: white;
+            border: none;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            font-size: 0.65em;
+            color: #000;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+            margin-left: auto;
+            font-weight: bold;
+        }
+        .close-card:hover {
+            background: #f0f0f0;
+            transform: scale(1.1);
+        }
+
+        .card-body { 
+            padding: 20px; 
+            display: flex; 
+            gap: 15px; 
+            flex-direction: column;
+        }
+        @media (min-width: 600px) {
+            .card-body { flex-direction: row; }
+        }
+        .card-front, .card-back { 
+            flex: 1; 
+            padding: 15px; 
+            border-radius: 12px; 
+            background: #fef9e7;
+            line-height: 1.6;
+        }
+        .card-front h3, .card-back h3 { 
+            color: #000;
+            margin-top: 0; 
+            font-size: 1.25em; 
+            margin-bottom: 12px;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 6px;
+        }
+        .card-front p, .card-back p {
+            margin: 0 0 12px;
+            font-size: 0.95em;
+        }
+        .card-front ul, .card-back ul {
+            margin: 8px 0;
+            padding-left: 20px;
+        }
+        .card-front li, .card-back li {
+            margin-bottom: 4px;
+        }
+        .card-front strong, .card-back strong {
+            color: #000;
+        }
+
+        /* === SEÇÕES DE CATEGORIA - RESPONSIVAS === */
+        .category-section {
+            margin: 50px 0;
+            padding: 25px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            scroll-margin-top: 100px;
+        }
+        .category-title {
+            font-size: 1.6em;
+            margin-bottom: 18px;
+            padding-bottom: 8px;
+            border-bottom: 3px solid;
+            display: inline-block;
+        }
+        .ajuda .category-title { color: #f39c12; border-color: #f39c12; }
+        .desafio .category-title { color: #27ae60; border-color: #27ae60; }
+        .gerenciamento .category-title { color: #9b59b6; border-color: #9b59b6; }
+        .diagnostico .category-title { color: #e74c3c; border-color: #e74c3c; }
+        .planejamento .category-title { color: #f1c40f; border-color: #f1c40f; }
+        .realizacao .category-title { color: #1e88e5; border-color: #1e88e5; }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 14px;
+        }
+
+        .card-item {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 10px;
+            border-left: 5px solid;
+            transition: all 0.2s;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .card-item:hover { 
+            background: #e9ecef; 
+            transform: translateY(-2px); 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .card-circle {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            font-size: 0.85em;
+            flex-shrink: 0;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+        }
+        .ajuda .card-circle { background: #f39c12; }
+        .desafio .card-circle { background: #27ae60; }
+        .gerenciamento .card-circle { background: #9b59b6; }
+        .diagnostico .card-circle { background: #e74c3c; }
+        .planejamento .card-circle { background: #f1c40f; }
+        .realizacao .card-circle { background: #1e88e5; }
+
+        .card-text {
+            flex: 1;
+            min-width: 0;
+        }
+        .card-text strong {
+            display: block;
+            font-size: 1em;
+            margin-bottom: 2px;
+        }
+        .card-text small {
+            font-size: 0.8em;
+            color: #555;
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .ajuda .card-item { border-color: #f39c12; }
+        .desafio .card-item { border-color: #27ae60; }
+        .gerenciamento .card-item { border-color: #9b59b6; }
+        .diagnostico .card-item { border-color: #e74c3c; }
+        .planejamento .card-item { border-color: #f1c40f; }
+        .realizacao .card-item { border-color: #1e88e5; }
+
+        .back-btn {
+            display: block;
+            margin: 40px auto;
+            padding: 12px 28px;
+            background: #1e88e5;
+            color: white;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            border: none;
+            font-size: 1em;
+            max-width: 200px;
+        }
+        .back-btn:hover { background: #1565c0; }
+
+        /* === RESPONSIVIDADE TOTAL === */
+        @media (max-width: 768px) {
+            .logo-title h1 { font-size: 1.5em; color: #000; }
+            .logo-title p { font-size: 0.85em; }
+            .index-nav { gap: 8px; }
+            .index-nav a { padding: 5px 10px; font-size: 0.8em; }
+            .matrix-cell { width: 45px; height: 45px; line-height: 45px; font-size: 0.75em; }
+            .code-circle { width: 44px; height: 44px; line-height: 44px; font-size: 0.75em; color: #000; }
+            .card-header { font-size: 1.2em; padding: 14px; gap: 10px; }
+            .close-card { width: 24px; height: 24px; font-size: 0.6em; }
+            .card-body { padding: 16px; }
+            .category-title { font-size: 1.4em; }
+        }
+
+        @media (max-width: 480px) {
+            .container { padding: 0 10px; margin: 20px auto; }
+            .header-container { flex-direction: column; text-align: center; }
+            .logo-title h1 { font-size: 1.4em; color: #000; }
+            .index-nav { justify-content: center; }
+            .matrix-container { padding: 15px; }
+            .matrix-title { font-size: 1.2em; }
+            .matrix-cell { width: 40px; height: 40px; line-height: 40px; font-size: 0.7em; }
+            .card-grid { grid-template-columns: 1fr; }
+            .card-item { padding: 10px; }
+            .card-circle { width: 40px; height: 40px; font-size: 0.75em; }
+            .code-circle { width: 40px; height: 40px; line-height: 40px; font-size: 0.7em; color: #000; }
+            .card-header { 
+                font-size: 1.1em; 
+                padding: 12px; 
+                flex-direction: column; 
+                text-align: center; 
+                gap: 8px;
+            }
+            .card-header-left { 
+                width: 100%; 
+                justify-content: center; 
+                gap: 10px;
+            }
+            .card-title-text { max-width: none; }
+            .close-card { 
+                position: absolute; 
+                top: 8px; 
+                right: 8px; 
+                width: 24px; 
+                height: 24px; 
+                font-size: 0.6em;
+            }
+            .category-section { padding: 20px; margin: 40px 0; }
+            .category-title { font-size: 1.3em; }
+            .back-btn { padding: 10px 20px; font-size: 0.9em; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER FIXO -->
+    <header id="main-header">
+        <div class="header-container">
+            <div class="logo-title">
+                <h1>Wiki do Questbox</h1>
+                <p>Sistema Gamificado para Criar Projetos de Sucesso</p>
+            </div>
+            <nav class="index-nav">
+                <a href="#matriz" onclick="smoothScroll('#matriz')">Matriz</a>
+                <a href="#ajuda" onclick="smoothScroll('#ajuda')">Ajuda</a>
+                <a href="#desafio" onclick="smoothScroll('#desafio')">Desafio</a>
+                <a href="#gerenciamento" onclick="smoothScroll('#gerenciamento')">Gerenciamento</a>
+                <a href="#diagnostico" onclick="smoothScroll('#diagnostico')">Diagnóstico</a>
+                <a href="#planejamento" onclick="smoothScroll('#planejamento')">Planejamento</a>
+                <a href="#realizacao" onclick="smoothScroll('#realizacao')">Realização</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <!-- MATRIZ HORIZONTAL -->
+        <div id="matriz" class="matrix-container">
+            <div class="matrix-title">Matriz completa dos 108 cards</div>
+            <div class="matrix-grid" id="matrix-grid"></div>
+        </div>
+
+        <!-- CARD DETALHADO -->
+        <div id="card-detail" class="card-detail">
+            <div id="card-header" class="card-header">
+                <div class="card-header-left">
+                    <span id="code-circle" class="code-circle"></span>
+                    <span id="card-title-text" class="card-title-text"></span>
+                </div>
+                <button class="close-card" onclick="closeCard()">X</button>
+            </div>
+            <div class="card-body">
+                <div id="card-front" class="card-front">
+                    <h3>Frente do Card</h3>
+                    <div id="front-content"></div>
+                </div>
+                <div id="card-back" class="card-back">
+                    <h3>Verso do Card</h3>
+                    <div id="back-content"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- INTRODUÇÃO -->
+        <div style="background:white; padding:25px; border-radius:16px; margin:40px 0; box-shadow:0 4px 15px rgba(0,0,0,0.08);">
+            <h2>#1. Introdução: O Que é o Questbox?</h2>
+            <p>Olá! Seja bem vindo ao Questbox, o jogo de criação de projetos. Se você começou agora e não faz ideia do que fazer, então comece por aqui. Volte a este card sempre que se sentir perdido ou quiser recomeçar. Você pode criar um projeto sozinho ou em equipe. Podem jogar quantas pessoas quiserem, desde que se respeitem e trabalhem juntas para cumprir o desafio ou objetivos do projeto. Então vamos começar.</p>
+            <p>Os desafios são os objetivos, aquilo que você tem de importante para fazer. Você pode escolher um dos desafios prontos do jogo ou trazer um desafio pessoal ou da sua equipe para começar, criando seu próprio mapa do zero. De qualquer forma, você decide por onde começar, seja por um desafio pronto ou um personalizado. Se o desafio que você escolheu não estiver na lista, pegue o card de Diagnóstico vermelho Objetivos, e anote o seu desafio nele.</p>
+            <p>O jogo possui 3 fases: 1. Diagnóstico (o que é olhar para dentro e sentir); 2. Planejamento (o que é olhar para o centro e pensar); 3. Realização (o que é olhar para o mundo e agir). Cada uma dessas fases tem suas ferramentas próprias, mas todas as ferramentas complementam umas às outras. É importante você e sua equipe adotarem a postura correta durante cada fase, aplicando os atributos necessários para trabalhar cada Desafio.</p>
+            <p>O jogo abrange 6 áreas: Elas são: Desenvolvimento Humano, Comunicação, Trabalho em Equipe, Educação, Projetos e Gestão. Cada uma delas possui seus próprios desafios, problemas e propostas. Porém elas são complementares, interconectadas e integradas.</p>
+            <p>O jogo possui 6 papéis: Cada papel está relacionado a uma das 6 áreas do jogo. Você pode utilizar os papéis como exemplo ou referência para saber como se comportar, ou criar mais papéis, identificando e empatia com uma área. Um papel pode ser um cargo, função ou profissão que você desempenha no projeto. Você pode querer criar o seu próprio papel e os da sua equipe. Para isso, basta anotar o papel no card de Gerenciamento Ficha Pessoal FP, ou no card de Diagnóstico Papéis F9.</p>
+            <p>Observe os ícones coloridos na frente dos cards. Esses são os encaixes. Os cards se relacionam e se referenciam através desses ícones.</p>
+            <p>“Subir de nível” significa ficar melhor em alguma coisa. Ser recompensado é sinal de que você fez algo bom ou corretamente. Você pode se aperfeiçoar e subir de nível treinando suas habilidades, realizando tarefas, atingindo metas ou sendo bem avaliado. Repare que alguns cards possuem campos para preencher e mensurar seu progresso com “pontos” e “níveis”. Eles são: a Ficha Pessoal FP, Motivações F4, Habilidades F7, Metas F27, Tarefas F43 e Avaliação F48.</p>
+        </div>
+
+        <!-- CATEGORIAS -->
+        <div id="ajuda" class="category-section ajuda">
+            <h2 class="category-title">Ajuda</h2>
+            <div class="card-grid" id="list-ajuda"></div>
+        </div>
+
+        <div id="desafio" class="category-section desafio">
+            <h2 class="category-title">Desafio</h2>
+            <div class="card-grid" id="list-desafio"></div>
+        </div>
+
+        <div id="gerenciamento" class="category-section gerenciamento">
+            <h2 class="category-title">Gerenciamento</h2>
+            <div class="card-grid" id="list-gerenciamento"></div>
+        </div>
+
+        <div id="diagnostico" class="category-section diagnostico">
+            <h2 class="category-title">Diagnóstico</h2>
+            <div class="card-grid" id="list-diagnostico"></div>
+        </div>
+
+        <div id="planejamento" class="category-section planejamento">
+            <h2 class="category-title">Planejamento</h2>
+            <div class="card-grid" id="list-planejamento"></div>
+        </div>
+
+        <div id="realizacao" class="category-section realizacao">
+            <h2 class="category-title">Realização</h2>
+            <div class="card-grid" id="list-realizacao"></div>
+        </div>
+
+        <div style="text-align:center; margin:40px 0;">
+            <button class="back-btn" onclick="window.scrollTo({top:0, behavior:'smooth'})">Voltar ao Topo</button>
+        </div>
+
+    </div>
+
+    <!-- DADOS DOS 108 CARDS - CONTEÚDO COMPLETO DO PDF -->
+    <script>
+        const cards = [
+            // === AJUDA (A1-A18) ===
+            {code:"A1",title:"Como Jogar",cat:"ajuda",dur:5,xp:5,
+             front:`<strong>Como começar?</strong><br>Há duas formas de você começar: 1. Escolha um desafio pronto (D1-D18) ou 2. Crie seu próprio desafio personalizado.<br><br><strong>Passos:</strong><ul><li>1. Escolha um desafio.</li><li>2. Pegue os cards do mapa no verso do desafio.</li><li>3. Monte o mapa na área de trabalho.</li><li>4. Comece pelo Diagnóstico.</li></ul>`,
+             back:`<strong>Regras básicas:</strong><ul><li>Use os encaixes coloridos para conectar cards.</li><li>Suba de nível com XP.</li><li>Registre tudo no Diário de Bordo DB.</li></ul>`},
+            {code:"A2",title:"Os Tipos de Cards",cat:"ajuda",dur:5,xp:3,
+             front:`<strong>6 tipos de cards:</strong><ul><li><strong>Ajuda (Laranja):</strong> Guia do jogo.</li><li><strong>Desafio (Verde):</strong> Objetivos prontos.</li><li><strong>Gerenciamento (Roxo):</strong> Acompanhamento.</li><li><strong>Diagnóstico (Vermelho):</strong> Fase 1.</li><li><strong>Planejamento (Amarelo):</strong> Fase 2.</li><li><strong>Realização (Azul):</strong> Fase 3.</li></ul>`,
+             back:`<strong>Como usar:</strong><ul><li>Ajuda: sempre que precisar.</li><li>Desafio: escolha um para começar.</li><li>Gerenciamento: monitore progresso.</li><li>Diagnóstico: levante o cenário.</li><li>Planejamento: planeje ações.</li><li>Realização: execute tarefas.</li></ul>`},
+            {code:"A3",title:"Encaixes entre cards",cat:"ajuda",dur:5,xp:3,
+             front:`<strong>Ícones coloridos = conexões</strong><br>Procure na frente de cada card os ícones que fazem referência a outros cards. Os ícones laranjados de cards de Ajuda também são encaixes.<br><br><strong>Exemplo:</strong> Card F1 tem ícone vermelho → conecta com F2, F3, etc.`,
+             back:`<strong>Dica:</strong> Consulte o card A4 para ver como montar mapas usando encaixes. Cada card possui um card de Ajuda ligado a ele. Consulte-o sempre que estiver em dúvida ou precisar refletir sobre suas características.`},
+            {code:"A4",title:"Criação de Mapas",cat:"ajuda",dur:10,xp:8,
+             front:`<strong>Monte seu mapa de ferramentas</strong><br>Use o verso dos cards D1-D18 para montar o mapa do desafio escolhido.<br><br><strong>Passos:</strong><ul><li>1. Pegue o card de desafio.</li><li>2. Veja o mapa no verso.</li><li>3. Pegue os cards indicados.</li><li>4. Monte na área de trabalho.</li></ul>`,
+             back:`<strong>Dica:</strong> Cada desafio tem um mapa pré-definido no verso. Se criar seu próprio desafio, use o card M (Mapa) para anotar os códigos dos cards que deseja utilizar.`},
+            {code:"A5",title:"Área de Trabalho",cat:"ajuda",dur:5,xp:3,
+             front:`<strong>Organize seu espaço</strong><br>A área de trabalho é o espaço reservado para visualização, disposição, manuseio, interação e preenchimento das informações contidas nos cards.<br><br><strong>Dica:</strong> Disponha os cards em ordem lógica: Diagnóstico → Planejamento → Realização.`,
+             back:`<strong>Como usar:</strong><ul><li>Disponha cards seguindo a ordem dos códigos e cores de cada fase.</li><li>É recomendado dispor os cards seguindo a ordem dos códigos e cores de cada fase.</li></ul>`},
+            {code:"A6",title:"Dificuldade e Duração",cat:"ajuda",dur:5,xp:3,
+             front:`<strong>Calcule tempo e complexidade</strong><br><strong>Fórmula:</strong> Dificuldade = número de cards × 10<br><strong>Exemplo:</strong> 10 cards = dificuldade 100<br><br><strong>Duração:</strong> Cada card tem uma duração estimada em minutos.`,
+             back:`<strong>Dica:</strong> O tempo de cada reunião, treinamento, realização de avaliações e mesmo o preenchimento de cards deve ser combinado entre os membros da equipe.`},
+            {code:"A7",title:"Cards de Ajuda",cat:"ajuda",dur:3,xp:2,
+             front:`<strong>Use sempre que precisar</strong><br>18 cards laranjas, códigos A1 a A18.<br><br><strong>Quando usar:</strong><ul><li>Se sentir perdido.</li><li>Precisa de orientação.</li><li>Quer recomeçar.</li></ul>`,
+             back:`<strong>Dica:</strong> Recorra a eles em caso de dúvida. Eles possuem a visão geral de todo o jogo.`},
+            {code:"A8",title:"Cards de Desafio",cat:"ajuda",dur:5,xp:5,
+             front:`<strong>Escolha um para começar</strong><br>18 cards verdes, códigos D1 a D18.<br><br><strong>Como usar:</strong><ul><li>Escolha um desafio.</li><li>Pegue o mapa no verso.</li><li>Monte o mapa.</li></ul>`,
+             back:`<strong>Dica:</strong> Cada um tem um mapa no verso. Use esse mapa para começar a trabalhar no seu desafio.`},
+            {code:"A9",title:"Cards de Gerenciamento",cat:"ajuda",dur:5,xp:5,
+             front:`<strong>Ferramentas de acompanhamento</strong><br>Cards roxos: B, PA, FP, PC, M, DB, P1-P6, AR1-AR6.<br><br><strong>Funções:</strong><ul><li>B: Bússola</li><li>FP: Ficha Pessoal</li><li>PC: Painel de Controle</li></ul>`,
+             back:`<strong>Dica:</strong> Use para monitorar progresso, registrar ações e manter alinhamento da equipe.`},
+            {code:"A10",title:"Cards de Diagnóstico",cat:"ajuda",dur:5,xp:3,
+             front:`<strong>Fase 1: Levante o cenário</strong><br>18 cards vermelhos, códigos F1 a F18.<br><br><strong>Objetivo:</strong> Identificar problemas, demandas, motivações, etc.`,
+             back:`<strong>Dica:</strong> Comece pelo card F1 (Objetivos). Preencha todos os cards vermelhos antes de passar para o Planejamento.`},
+            {code:"A11",title:"Cards de Planejamento",cat:"ajuda",dur:5,xp:3,
+             front:`<strong>Fase 2: Planeje ações</strong><br>18 cards amarelos, códigos F19 a F36.<br><br><strong>Objetivo:</strong> Definir metas, estratégias, cronograma, etc.`,
+             back:`<strong>Dica:</strong> Use os dados do Diagnóstico para preencher os cards amarelos.`},
+            {code:"A12",title:"Cards de Realização",cat:"ajuda",dur:5,xp:3,
+             front:`<strong>Fase 3: Execute tarefas</strong><br>18 cards azuis, códigos F37 a F54.<br><br><strong>Objetivo:</strong> Realizar tarefas, registrar resultados, avaliar desempenho.`,
+             back:`<strong>Dica:</strong> Use o Painel de Controle PC para monitorar o progresso.`},
+            {code:"A13",title:"A Bússola",cat:"ajuda",dur:10,xp:10,
+             front:`<strong>Diagrama integrado</strong><br>Card B (Bússola) contém o diagrama com 3 fases, 6 áreas e 6 papéis.<br><br><strong>Como usar:</strong><ul><li>Orientação geral do projeto.</li><li>Alinhamento da equipe.</li></ul>`,
+             back:`<strong>Dica:</strong> Consulte sempre que precisar relembrar a estrutura do jogo.`},
+            {code:"A14",title:"As Fases do Jogo",cat:"ajuda",dur:5,xp:5,
+             front:`<strong>3 fases:</strong><ul><li><strong>Diagnóstico:</strong> Olhar para dentro e sentir.</li><li><strong>Planejamento:</strong> Olhar para o centro e pensar.</li><li><strong>Realização:</strong> Olhar para o mundo e agir.</li></ul>`,
+             back:`<strong>Dica:</strong> Cada fase tem 18 cards. Complete uma fase antes de passar para a próxima.`},
+            {code:"A15",title:"As Áreas",cat:"ajuda",dur:5,xp:5,
+             front:`<strong>6 áreas de atuação:</strong><ul><li>Desenvolvimento Humano</li><li>Comunicação</li><li>Trabalho em Equipe</li><li>Educação</li><li>Projetos</li><li>Gestão</li></ul>`,
+             back:`<strong>Dica:</strong> Cada área tem um papel correspondente (P1 a P6).`},
+            {code:"A16",title:"Os Papéis",cat:"ajuda",dur:5,xp:5,
+             front:`<strong>6 papéis para jogar:</strong><ul><li>P1: Mentor</li><li>P2: Mediador</li><li>P3: Facilitador</li><li>P4: Instrutor</li><li>P5: Projetista</li><li>P6: Gestor</li></ul>`,
+             back:`<strong>Dica:</strong> Cada papel está ligado a uma área. Use como referência ou crie seus próprios papéis.`},
+            {code:"A17",title:"Os Atributos Pessoais",cat:"ajuda",dur:5,xp:3,
+             front:`<strong>Capacidades humanas:</strong><ul><li>Força</li><li>Inteligência</li><li>Carisma</li><li>Agilidade</li><li>Percepção</li><li>Constituição</li></ul>`,
+             back:`<strong>Dica:</strong> Use no card F7 (Habilidades) para medir o nível de cada atributo.`},
+            {code:"A18",title:"Evolução e Progresso",cat:"ajuda",dur:5,xp:5,
+             front:`<strong>Suba de nível</strong><br>Ganhe XP ao completar cards, realizar tarefas, atingir metas.<br><br><strong>Como:</strong><ul><li>Preencha cards com qualidade.</li><li>Cumpra prazos.</li><li>Receba feedback positivo.</li></ul>`,
+             back:`<strong>Dica:</strong> Registre XP na Ficha Pessoal FP. Ao acumular XP suficiente, suba de nível.`},
+
+            // === DESAFIO (D1-D18) ===
+            {code:"D1",title:"Análise de Perfil",cat:"desafio",dur:15,xp:15,
+             front:`<strong>Diagnóstico de requisitos pessoais</strong><br><strong>Objetivo:</strong> Identificar habilidades, motivações e papel no projeto.<br><br><strong>Mapa:</strong> F1, F6, F7, FP, P1`,
+             back:`<strong>Passos:</strong><ul><li>1. Preencha F1 (Objetivos pessoais).</li><li>2. Use F7 para mapear habilidades.</li><li>3. Defina seu papel com P1.</li></ul>`},
+            {code:"D2",title:"Análise de Ambiente",cat:"desafio",dur:15,xp:15,
+             front:`<strong>Local e riscos/oportunidades</strong><br><strong>Objetivo:</strong> Mapear o ambiente físico e identificar fatores externos.<br><br><strong>Mapa:</strong> F18, F29, F30`,
+             back:`<strong>Passos:</strong><ul><li>1. Descreva o local de trabalho.</li><li>2. Liste riscos (F29).</li><li>3. Identifique oportunidades (F30).</li></ul>`},
+            {code:"D3",title:"Análise de Público",cat:"desafio",dur:15,xp:15,
+             front:`<strong>Clientes e demandas</strong><br><strong>Objetivo:</strong> Entender quem é o público-alvo e suas necessidades.<br><br><strong>Mapa:</strong> F3, F13, F37`,
+             back:`<strong>Passos:</strong><ul><li>1. Liste demandas (F3).</li><li>2. Descreva o público (F13).</li><li>3. Planeje atendimento (F37).</li></ul>`},
+            {code:"D4",title:"Plano de Vendas",cat:"desafio",dur:20,xp:20,
+             front:`<strong>Script de vendas</strong><br><strong>Objetivo:</strong> Criar um plano de abordagem comercial.<br><br><strong>Mapa:</strong> F21, F26, F42`,
+             back:`<strong>Passos:</strong><ul><li>1. Defina script (F21).</li><li>2. Estabeleça preços (F26).</li><li>3. Prepare contrato (F42).</li></ul>`},
+            {code:"D5",title:"Atendimento",cat:"desafio",dur:10,xp:10,
+             front:`<strong>Scripts e fichas</strong><br><strong>Objetivo:</strong> Padronizar o atendimento ao cliente.<br><br><strong>Mapa:</strong> F37, F41, F53`,
+             back:`<strong>Passos:</strong><ul><li>1. Crie ficha de atendimento (F37).</li><li>2. Registre feedbacks (F41).</li><li>3. Ofereça suporte (F53).</li></ul>`},
+            {code:"D6",title:"Negociação",cat:"desafio",dur:15,xp:15,
+             front:`<strong>Acordos</strong><br><strong>Objetivo:</strong> Fechar parcerias e contratos.<br><br><strong>Mapa:</strong> F35, F42`,
+             back:`<strong>Passos:</strong><ul><li>1. Prepare proposta (F35).</li><li>2. Negocie termos (F42).</li></ul>`},
+            {code:"D7",title:"Networking",cat:"desafio",dur:10,xp:10,
+             front:`<strong>Relações interpessoais</strong><br><strong>Objetivo:</strong> Construir rede de contatos.<br><br><strong>Mapa:</strong> F10, F12`,
+             back:`<strong>Passos:</strong><ul><li>1. Mapeie relações (F10).</li><li>2. Liste parceiros (F12).</li></ul>`},
+            {code:"D8",title:"Plano de Carreira",cat:"desafio",dur:20,xp:20,
+             front:`<strong>Planejamento profissional</strong><br><strong>Objetivo:</strong> Definir trajetória de crescimento.<br><br><strong>Mapa:</strong> F1, F7, F27`,
+             back:`<strong>Passos:</strong><ul><li>1. Defina objetivos (F1).</li><li>2. Mapeie habilidades (F7).</li><li>3. Estabeleça metas (F27).</li></ul>`},
+            {code:"D9",title:"Trabalho em Equipe",cat:"desafio",dur:15,xp:15,
+             front:`<strong>Espírito de equipe</strong><br><strong>Objetivo:</strong> Fortalecer a colaboração.<br><br><strong>Mapa:</strong> F10, F11, P3`,
+             back:`<strong>Passos:</strong><ul><li>1. Mapeie relações (F10).</li><li>2. Liste membros (F11).</li><li>3. Defina facilitador (P3).</li></ul>`},
+            {code:"D10",title:"Engajamento",cat:"desafio",dur:10,xp:10,
+             front:`<strong>Manter motivação</strong><br><strong>Objetivo:</strong> Garantir participação ativa.<br><br><strong>Mapa:</strong> F4, F8, F47`,
+             back:`<strong>Passos:</strong><ul><li>1. Identifique motivações (F4).</li><li>2. Defina recompensas (F8).</li><li>3. Registre presença (F47).</li></ul>`},
+            {code:"D11",title:"Treinamento",cat:"desafio",dur:15,xp:15,
+             front:`<strong>Aperfeiçoamento</strong><br><strong>Objetivo:</strong> Desenvolver habilidades da equipe.<br><br><strong>Mapa:</strong> F7, F46`,
+             back:`<strong>Passos:</strong><ul><li>1. Mapeie habilidades atuais (F7).</li><li>2. Planeje treinamentos (F46).</li></ul>`},
+            {code:"D12",title:"Plano de Aula",cat:"desafio",dur:20,xp:20,
+             front:`<strong>Planejamento de estudos</strong><br><strong>Objetivo:</strong> Estruturar conteúdo educacional.<br><br><strong>Mapa:</strong> F31, F36`,
+             back:`<strong>Passos:</strong><ul><li>1. Defina metodologia (F31).</li><li>2. Crie instruções (F36).</li></ul>`},
+            {code:"D13",title:"Criação de Projetos",cat:"desafio",dur:25,xp:25,
+             front:`<strong>Visão completa</strong><br><strong>Objetivo:</strong> Desenvolver um projeto do início ao fim.<br><br><strong>Mapa:</strong> F1, F19, F43`,
+             back:`<strong>Passos:</strong><ul><li>1. Defina objetivo (F1).</li><li>2. Gere ideias (F19).</li><li>3. Execute tarefas (F43).</li></ul>`},
+            {code:"D14",title:"Modelo de Negócios",cat:"desafio",dur:20,xp:20,
+             front:`<strong>Empreendimento</strong><br><strong>Objetivo:</strong> Estruturar um negócio sustentável.<br><br><strong>Mapa:</strong> F14, F26`,
+             back:`<strong>Passos:</strong><ul><li>1. Liste fornecedores (F14).</li><li>2. Defina receitas (F26).</li></ul>`},
+            {code:"D15",title:"Criação de Produto",cat:"desafio",dur:20,xp:20,
+             front:`<strong>Entrega ao público</strong><br><strong>Objetivo:</strong> Desenvolver um produto de qualidade.<br><br><strong>Mapa:</strong> F15, F51`,
+             back:`<strong>Passos:</strong><ul><li>1. Descreva produto (F15).</li><li>2. Controle estoque (F51).</li></ul>`},
+            {code:"D16",title:"Gestão Financeira",cat:"desafio",dur:15,xp:15,
+             front:`<strong>Valorizar dinheiro</strong><br><strong>Objetivo:</strong> Gerenciar recursos financeiros.<br><br><strong>Mapa:</strong> F25, F49`,
+             back:`<strong>Passos:</strong><ul><li>1. Defina custos (F25).</li><li>2. Registre caixa (F49).</li></ul>`},
+            {code:"D17",title:"Gestão de Recursos",cat:"desafio",dur:15,xp:15,
+             front:`<strong>Escassez e abundância</strong><br><strong>Objetivo:</strong> Otimizar uso de recursos.<br><br><strong>Mapa:</strong> F23, F50`,
+             back:`<strong>Passos:</strong><ul><li>1. Liste recursos necessários (F23).</li><li>2. Controle inventário (F50).</li></ul>`},
+            {code:"D18",title:"Gestão de Tempo",cat:"desafio",dur:15,xp:15,
+             front:`<strong>Economizar tempo</strong><br><strong>Objetivo:</strong> Aumentar produtividade.<br><br><strong>Mapa:</strong> F24, F39`,
+             back:`<strong>Passos:</strong><ul><li>1. Crie cronograma (F24).</li><li>2. Use agenda (F39).</li></ul>`},
+
+            // === GERENCIAMENTO ===
+            {code:"B",title:"Bússola",cat:"gerenciamento",dur:10,xp:10,
+             front:`<strong>Diagrama com princípios do jogo</strong><br>Contém: 3 fases, 6 áreas, 6 papéis.<br><br><strong>Como usar:</strong> Orientação geral do projeto.`,
+             back:`<strong>3 Fases, 6 Áreas, 6 Papéis</strong><br>Use como referência para manter o alinhamento da equipe.`},
+            {code:"FP",title:"Ficha Pessoal",cat:"gerenciamento",dur:5,xp:5,
+             front:`<strong>Informações pessoais e progresso</strong><br><strong>Campos:</strong> Nome, Papel, Nível, XP, Atributos.<br><br><strong>Como usar:</strong> Registre seu progresso no jogo.`,
+             back:`<strong>Nome, Papel, Nível, XP</strong><br>Preencha com seus dados e acompanhe sua evolução.`},
+            {code:"PA",title:"Painel de Alinhamento",cat:"gerenciamento",dur:5,xp:5,
+             front:`<strong>Acolher, focalizar, validar</strong><br><strong>Checklist de início de projeto:</strong><ul><li>Objetivo claro?</li><li>Equipe alinhada?</li><li>Recursos disponíveis?</li></ul>`,
+             back:`<strong>Checklist de início de projeto</strong><br>Use no início de cada desafio para garantir alinhamento.`},
+            {code:"PC",title:"Painel de Controle",cat:"gerenciamento",dur:10,xp:10,
+             front:`<strong>Monitoramento de desempenho</strong><br>Gráficos de progresso: XP, tarefas concluídas, prazos.<br><br><strong>Como usar:</strong> Atualize semanalmente.`,
+             back:`<strong>Gráficos de progresso</strong><br>Registre indicadores do projeto.`},
+            {code:"M",title:"Mapa",cat:"gerenciamento",dur:5,xp:5,
+             front:`<strong>Receita de cards do projeto</strong><br>Anote os códigos dos cards que você escolheu para realizar o seu projeto.<br><br><strong>Como usar:</strong> Liste todos os cards do mapa.`,
+             back:`<strong>Anote os códigos escolhidos</strong><br>Ex: F1, F19, F43, etc.`},
+            {code:"DB",title:"Diário de Bordo",cat:"gerenciamento",dur:5,xp:3,
+             front:`<strong>Atualizações diárias</strong><br><strong>Campos:</strong> Data, Ação, Resultado, Aprendizado.<br><br><strong>Como usar:</strong> Registre diariamente.`,
+             back:`<strong>Data, Ação, Resultado</strong><br>Mantenha o histórico do projeto.`},
+            {code:"P1",title:"Mentor",cat:"gerenciamento",dur:10,xp:10,
+             front:`<strong>Desenvolvimento humano</strong><br><strong>Responsável por:</strong> Crescimento pessoal, motivação, equilíbrio emocional.<br><br><strong>Área:</strong> Desenvolvimento Humano`,
+             back:`<strong>AR1, A17, F7</strong><br>Use para orientar a equipe no desenvolvimento pessoal.`},
+            {code:"P2",title:"Mediador",cat:"gerenciamento",dur:10,xp:10,
+             front:`<strong>Comunicação</strong><br><strong>Responsável por:</strong> Diálogo, resolução de conflitos, clareza na comunicação.<br><br><strong>Área:</strong> Comunicação`,
+             back:`<strong>AR2, F10</strong><br>Use para facilitar reuniões e mediar discussões.`},
+            {code:"P3",title:"Facilitador",cat:"gerenciamento",dur:10,xp:10,
+             front:`<strong>Trabalho em equipe</strong><br><strong>Responsável por:</strong> Colaboração, dinâmica de grupo, engajamento.<br><br><strong>Área:</strong> Trabalho em Equipe`,
+             back:`<strong>AR3, F11</strong><br>Use para organizar atividades em grupo.`},
+            {code:"P4",title:"Instrutor",cat:"gerenciamento",dur:10,xp:10,
+             front:`<strong>Educação</strong><br><strong>Responsável por:</strong> Treinamento, transmissão de conhecimento, aprendizado.<br><br><strong>Área:</strong> Educação`,
+             back:`<strong>AR4, F46</strong><br>Use para planejar e ministrar treinamentos.`},
+            {code:"P5",title:"Projetista",cat:"gerenciamento",dur:10,xp:10,
+             front:`<strong>Projetos</strong><br><strong>Responsável por:</strong> Planejamento, execução, entrega de resultados.<br><br><strong>Área:</strong> Projetos`,
+             back:`<strong>AR5, F43</strong><br>Use para gerenciar o ciclo de vida do projeto.`},
+            {code:"P6",title:"Gestor",cat:"gerenciamento",dur:10,xp:10,
+             front:`<strong>Gestão</strong><br><strong>Responsável por:</strong> Recursos, prazos, orçamento, qualidade.<br><br><strong>Área:</strong> Gestão`,
+             back:`<strong>AR6, F49</strong><br>Use para controlar finanças e recursos.`},
+            {code:"AR1",title:"Desenvolvimento Humano",cat:"gerenciamento",dur:8,xp:8,
+             front:`<strong>Aperfeiçoamento pessoal</strong><br><strong>Problemas comuns:</strong> Falta de motivação, estresse, desequilíbrio.<br><br><strong>Foco:</strong> Bem-estar, crescimento, resiliência.`,
+             back:`<strong>Problemas pessoais</strong><br>Use para identificar e resolver questões emocionais.`},
+            {code:"AR2",title:"Comunicação",cat:"gerenciamento",dur:8,xp:8,
+             front:`<strong>Entendimento mútuo</strong><br><strong>Problemas comuns:</strong> Mal-entendidos, ruídos, falta de clareza.<br><br><strong>Foco:</strong> Diálogo, escuta ativa, feedback.`,
+             back:`<strong>Conflitos</strong><br>Use para melhorar a comunicação da equipe.`},
+            {code:"AR3",title:"Trabalho em Equipe",cat:"gerenciamento",dur:8,xp:8,
+             front:`<strong>Relações de trabalho</strong><br><strong>Problemas comuns:</strong> Competição, falta de colaboração, desengajamento.<br><br><strong>Foco:</strong> Cooperação, confiança, sinergia.`,
+             back:`<strong>Competição</strong><br>Use para fortalecer o espírito de equipe.`},
+            {code:"AR4",title:"Educação",cat:"gerenciamento",dur:8,xp:8,
+             front:`<strong>Ensino e aprendizado</strong><br><strong>Problemas comuns:</strong> Desânimo, falta de método, resistência à mudança.<br><br><strong>Foco:</strong> Capacitação, desenvolvimento de competências.`,
+             back:`<strong>Desânimo</strong><br>Use para planejar treinamentos eficazes.`},
+            {code:"AR5",title:"Projetos",cat:"gerenciamento",dur:8,xp:8,
+             front:`<strong>Criação e execução</strong><br><strong>Problemas comuns:</strong> Estagnação, falta de direção, atrasos.<br><br><strong>Foco:</strong> Planejamento, execução, entrega.`,
+             back:`<strong>Estagnação</strong><br>Use para manter o projeto em movimento.`},
+            {code:"AR6",title:"Gestão",cat:"gerenciamento",dur:8,xp:8,
+             front:`<strong>Recursos e resultados</strong><br><strong>Problemas comuns:</strong> Escassez, desperdício, falta de controle.<br><br><strong>Foco:</strong> Eficiência, otimização, sustentabilidade.`,
+             back:`<strong>Escassez</strong><br>Use para gerenciar recursos com inteligência.`},
+
+            // === DIAGNÓSTICO (F1-F18) ===
+            {code:"F1",title:"Objetivos",cat:"diagnostico",dur:5,xp:5,
+             front:`<strong>Quais são os objetivos?</strong><br>Escreva o desafio principal do projeto.<br><br><strong>Exemplo:</strong> "Lançar um produto em 3 meses"`,
+             back:`<strong>Escreva o desafio principal</strong><br>Use verbos de ação e prazos claros.`},
+            {code:"F2",title:"Problemas",cat:"diagnostico",dur:5,xp:5,
+             front:`<strong>Quais são os problemas?</strong><br>Liste causas e sintomas.<br><br><strong>Exemplo:</strong> "Falta de clientes" (sintoma), "Marketing fraco" (causa)`,
+             back:`<strong>Liste causas e sintomas</strong><br>Identifique a raiz do problema.`},
+            {code:"F3",title:"Demandas",cat:"diagnostico",dur:5,xp:5,
+             front:`<strong>Necessidades do público</strong><br>Pedidos, reclamações, desejos.<br><br><strong>Exemplo:</strong> "Produto mais barato", "Entrega rápida"`,
+             back:`<strong>Pedidos do público</strong><br>Colete feedback direto dos clientes.`},
+            {code:"F4",title:"Motivações",cat:"diagnostico",dur:5,xp:5,
+             front:`<strong>Razões para agir</strong><br>O que move a equipe? Dinheiro? Impacto? Crescimento?<br><br><strong>Pontos:</strong> [ ] [ ] [ ] [ ] [ ]`,
+             back:`<strong>Satisfatório ou não</strong><br>Avalie o nível de motivação atual.`},
+            {code:"F5",title:"Histórico",cat:"diagnostico",dur:5,xp:5,
+             front:`<strong>Eventos importantes</strong><br>Currículo, linha do tempo, marcos.<br><br><strong>Exemplo:</strong> "2020: Fundação da empresa"`,
+             back:`<strong>Currículo ou linha do tempo</strong><br>Registre conquistas passadas.`},
+            {code:"F6",title:"Requisitos",cat:"diagnostico",dur:5,xp:5,
+             front:`<strong>Características necessárias</strong><br>Para papéis, produtos ou serviços.<br><br><strong>Exemplo:</strong> "Experiência em vendas"`,
+             back:`<strong>Para papéis ou produtos</strong><br>Defina o perfil ideal.`},
+            {code:"F7",title:"Habilidades",cat:"diagnostico",dur:5,xp:5,
+             front:`<strong>Níveis de habilidade</strong><br>Preencha as bolinhas conforme seu nível:<br>[ ] Iniciante → [ ] Avançado<br><br><strong>Atributos:</strong> Força, Inteligência, etc.`,
+             back:`<strong>Bolinhas para preencher</strong><br>Use 1 a 5 bolinhas por habilidade.`},
+            {code:"F8",title:"Recompensas",cat:"diagnostico",dur:5,xp:5,
+             front:`<strong>Ofertas e incentivos</strong><br>Comissões, bônus, reconhecimento.<br><br><strong>Exemplo:</strong> "10% de comissão por venda"`,
+             back:`<strong>Comissões ou incentivos</strong><br>Motive a equipe com recompensas claras.`},
+            {code:"F9",title:"Papéis",cat:"diagnostico",dur:5,xp:5,
+             front:`<strong>Cargos e funções</strong><br>Liste os papéis necessários no projeto.<br><br><strong>Exemplo:</strong> "Gerente", "Vendedor"`,
+             back:`<strong>Permissões</strong><br>Defina responsabilidades de cada papel.`},
+            {code:"F10",title:"Relações",cat:"diagnostico",dur:5,xp:5,
+             front:`<strong>Diagrama de relações</strong><br>Você, equipe, parceiros, público.<br><br><strong>Desenhe:</strong> Círculos conectados por setas.`,
+             back:`<strong>Você, equipe, parceiros, público</strong><br>Mapeie quem influencia quem.`},
+            {code:"F11",title:"Equipe",cat:"diagnostico",dur:5,xp:5,
+             front:`<strong>Membros da equipe</strong><br>Nome, papel, contato.<br><br><strong>Exemplo:</strong> "João - Vendedor - joao@email.com"`,
+             back:`<strong>Lista</strong><br>Mantenha atualizada.`},
+            {code:"F12",title:"Parceiros",cat:"diagnostico",dur:5,xp:5,
+             front:`<strong>Fora da equipe</strong><br>Fornecedores, locadores, consultores.<br><br><strong>Exemplo:</strong> "Fornecedor de matéria-prima"`,
+             back:`<strong>Fornecedores ou locadores</strong><br>Registre contatos importantes.`},
+            {code:"F13",title:"Público",cat:"diagnostico",dur:5,xp:5,
+             front:`<strong>Alvo do projeto</strong><br>Idade, gênero, localização, interesses.<br><br><strong>Exemplo:</strong> "Jovens de 18-25 anos, SP"`,
+             back:`<strong>Manter conhecido</strong><br>Atualize com pesquisas.`},
+            {code:"F14",title:"Fornecedores",cat:"diagnostico",dur:5,xp:5,
+             front:`<strong>Suprimentos</strong><br>Lista de fornecedores e itens.<br><br><strong>Exemplo:</strong> "Papelaria XYZ - R$500/mês"`,
+             back:`<strong>Reposição</strong><br>Planeje pedidos com antecedência.`},
+            {code:"F15",title:"Produtos",cat:"diagnostico",dur:5,xp:5,
+             front:`<strong>Oferecidos ao público</strong><br>Descrição, preço, composição.<br><br><strong>Exemplo:</strong> "Camiseta - R$50 - 100% algodão"`,
+             back:`<strong>Composição</strong><br>Detalhe materiais e custos.`},
+            {code:"F16",title:"Serviços",cat:"diagnostico",dur:5,xp:5,
+             front:`<strong>Ações sem produto físico</strong><br>Consultoria, aula, entrega.<br><br><strong>Exemplo:</strong> "Consultoria de 1h - R$200"`,
+             back:`<strong>Sem produto físico</strong><br>Defina escopo e duração.`},
+            {code:"F17",title:"Áreas",cat:"diagnostico",dur:5,xp:5,
+             front:`<strong>Regiões ou disciplinas</strong><br>Setores de atuação.<br><br><strong>Exemplo:</strong> "Marketing Digital", "Vendas"`,
+             back:`<strong>Setores ou disciplinas</strong><br>Organize por área de conhecimento.`},
+            {code:"F18",title:"Ambiente",cat:"diagnostico",dur:5,xp:5,
+             front:`<strong>Local de trabalho</strong><br>Descreva o espaço físico.<br><br><strong>Exemplo:</strong> "Sala com 4 mesas, internet 100MB"`,
+             back:`<strong>Áreas menores</strong><br>Detalhe condições de trabalho.`},
+
+            // === PLANEJAMENTO (F19-F36) ===
+            {code:"F19",title:"Ideias",cat:"planejamento",dur:5,xp:5,
+             front:`<strong>Visões iniciais</strong><br>Gere ideias sem julgamento.<br><br><strong>Técnica:</strong> Brainstorming`,
+             back:`<strong>Sem julgamento</strong><br>Anote todas as ideias, mesmo as "malucas".`},
+            {code:"F20",title:"Propostas",cat:"planejamento",dur:5,xp:5,
+             front:`<strong>Soluções viáveis</strong><br>Transforme ideias em propostas concretas.<br><br><strong>Exemplo:</strong> "Criar curso online"`,
+             back:`<strong>Declaração de valor</strong><br>Explique o benefício da proposta.`},
+            {code:"F21",title:"Conteúdos",cat:"planejamento",dur:5,xp:5,
+             front:`<strong>Sumários e scripts</strong><br>Roteiros, textos, apresentações.<br><br><strong>Exemplo:</strong> Script de vendas`,
+             back:`<strong>Scripts</strong><br>Padronize mensagens importantes.`},
+            {code:"F22",title:"Canais",cat:"planejamento",dur:5,xp:5,
+             front:`<strong>Meios de comunicação</strong><br>Redes sociais, e-mail, WhatsApp.<br><br><strong>Exemplo:</strong> Instagram, YouTube`,
+             back:`<strong>Slides ou mídias</strong><br>Escolha os canais mais eficazes.`},
+            {code:"F23",title:"Recursos",cat:"planejamento",dur:5,xp:5,
+             front:`<strong>Necessários para o projeto</strong><br>Lista de materiais, equipamentos, software.<br><br><strong>Exemplo:</strong> "Computador, câmera"`,
+             back:`<strong>Materiais</strong><br>Planeje aquisição com antecedência.`},
+            {code:"F24",title:"Cronograma",cat:"planejamento",dur:5,xp:5,
+             front:`<strong>Tempo total do projeto</strong><br>Divida em semanas ou meses.<br><br><strong>Exemplo:</strong> Semana 1: Diagnóstico`,
+             back:`<strong>Prazos</strong><br>Defina datas para cada fase.`},
+            {code:"F25",title:"Custos",cat:"planejamento",dur:5,xp:5,
+             front:`<strong>Orçamentos</strong><br>Lista de despesas previstas.<br><br><strong>Exemplo:</strong> "Marketing: R$1.000"`,
+             back:`<strong>Precificação</strong><br>Calcule custo total do projeto.`},
+            {code:"F26",title:"Receitas",cat:"planejamento",dur:5,xp:5,
+             front:`<strong>Fontes de lucro</strong><br>Vendas, assinaturas, patrocínios.<br><br><strong>Exemplo:</strong> "Venda de produto: R$5.000"`,
+             back:`<strong>Fontes de lucro</strong><br>Projetar faturamento mensal.`},
+            {code:"F27",title:"Metas",cat:"planejamento",dur:5,xp:5,
+             front:`<strong>Objetivos secundários</strong><br>Use critérios SMART.<br><br><strong>Exemplo:</strong> "Vender 100 unidades em 30 dias"`,
+             back:`<strong>Critérios SMART</strong><br>Específica, Mensurável, Alcançável, Relevante, Temporal.`},
+            {code:"F28",title:"Estratégias",cat:"planejamento",dur:5,xp:5,
+             front:`<strong>Cenários de ação</strong><br>Plano A, Plano B.<br><br><strong>Exemplo:</strong> "Se não vender, oferecer desconto"`,
+             back:`<strong>Ações</strong><br>Defina gatilhos e respostas.`},
+            {code:"F29",title:"Riscos",cat:"planejamento",dur:5,xp:5,
+             front:`<strong>Objeções e problemas</strong><br>Liste possíveis falhas.<br><br><strong>Exemplo:</strong> "Falta de cliente"`,
+             back:`<strong>Evitar problemas</strong><br>Crie plano de contingência.`},
+            {code:"F30",title:"Oportunidades",cat:"planejamento",dur:5,xp:5,
+             front:`<strong>Chances de sucesso</strong><br>Identifique brechas no mercado.<br><br><strong>Exemplo:</strong> "Nova tendência"`,
+             back:`<strong>Aproveitar</strong><br>Planeje como explorar a oportunidade.`},
+            {code:"F31",title:"Metodologia",cat:"planejamento",dur:5,xp:5,
+             front:`<strong>Método aplicado</strong><br>Passo a passo do processo.<br><br><strong>Exemplo:</strong> Scrum, Kanban`,
+             back:`<strong>Etapas</strong><br>Documente o fluxo de trabalho.`},
+            {code:"F32",title:"Pesquisas",cat:"planejamento",dur:5,xp:5,
+             front:`<strong>Colher dados</strong><br>Fontes: entrevistas, questionários, internet.<br><br><strong>Exemplo:</strong> "Pesquisa de mercado"`,
+             back:`<strong>Fontes</strong><br>Registre onde obteve os dados.`},
+            {code:"F33",title:"Referências",cat:"planejamento",dur:5,xp:5,
+             front:`<strong>Fontes consultadas</strong><br>Livros, artigos, sites.<br><br><strong>Exemplo:</strong> "Livro X, 2020"`,
+             back:`<strong>Autor e data</strong><br>Use formato ABNT ou APA.`},
+            {code:"F34",title:"Indicadores",cat:"planejamento",dur:5,xp:5,
+             front:`<strong>Números importantes</strong><br>KPI's: vendas, engajamento, satisfação.<br><br><strong>Exemplo:</strong> "Taxa de conversão: 5%"`,
+             back:`<strong>Tendências</strong><br>Defina metas para cada indicador.`},
+            {code:"F35",title:"Acordos",cat:"planejamento",dur:5,xp:5,
+             front:`<strong>Termos negociados</strong><br>Contratos, parcerias.<br><br><strong>Exemplo:</strong> "Parceria com influenciador"`,
+             back:`<strong>Negociação</strong><br>Registre condições acordadas.`},
+            {code:"F36",title:"Instruções",cat:"planejamento",dur:5,xp:5,
+             front:`<strong>Regras e receitas</strong><br>Passo a passo para tarefas.<br><br><strong>Exemplo:</strong> "Como fazer um post"`,
+             back:`<strong>Receitas</strong><br>Padronize processos repetitivos.`},
+
+            // === REALIZAÇÃO (F37-F54) ===
+            {code:"F37",title:"Ficha de Atendimento",cat:"realizacao",dur:5,xp:5,
+             front:`<strong>Registro de cliente</strong><br>Nome, contato, necessidade, solução oferecida.<br><br><strong>Campos adicionais:</strong> Data, status`,
+             back:`<strong>Campos adicionais</strong><br>Use para acompanhar o funil de vendas.`},
+            {code:"F38",title:"Contatos",cat:"realizacao",dur:5,xp:5,
+             front:`<strong>Lista de contatos</strong><br>Nome, telefone, e-mail, última interação.<br><br><strong>Exemplo:</strong> "Maria - 11 99999-9999"`,
+             back:`<strong>Agendar reuniões</strong><br>Mantenha atualizado.`},
+            {code:"F39",title:"Agenda",cat:"realizacao",dur:5,xp:5,
+             front:`<strong>Compromissos agendados</strong><br>Data, hora, atividade, responsável.<br><br><strong>Exemplo:</strong> "10/10 - Reunião - João"`,
+             back:`<strong>Eventos</strong><br>Sincronize com calendário.`},
+            {code:"F40",title:"Reuniões",cat:"realizacao",dur:5,xp:5,
+             front:`<strong>Atas de reunião</strong><br>Objetivo, participantes, decisões, tarefas.<br><br><strong>Exemplo:</strong> "Aprovado orçamento"`,
+             back:`<strong>Objetivos</strong><br>Registre tudo por escrito.`},
+            {code:"F41",title:"Feedbacks e Resultados",cat:"realizacao",dur:5,xp:5,
+             front:`<strong>Pesquisa de satisfação</strong><br>Notas, comentários, sugestões.<br><br><strong>Exemplo:</strong> "Nota 8 - Entrega rápida"`,
+             back:`<strong>Pesquisa</strong><br>Colete feedback regularmente.`},
+            {code:"F42",title:"Contrato",cat:"realizacao",dur:5,xp:5,
+             front:`<strong>Termos negociados</strong><br>Partes, objeto, valor, prazo, condições.<br><br><strong>Exemplo:</strong> "Serviço de R$1.000"`,
+             back:`<strong>Termos</strong><br>Assinatura de ambas as partes.`},
+            {code:"F43",title:"Tarefas",cat:"realizacao",dur:5,xp:5,
+             front:`<strong>Ações a serem executadas</strong><br>Descrição, responsável, prazo, status.<br><br><strong>Progresso:</strong> [ ] [ ] [ ] [ ] [ ]`,
+             back:`<strong>Progresso</strong><br>Marcar bolinhas conforme avanço.`},
+            {code:"F44",title:"Interdependências",cat:"realizacao",dur:5,xp:5,
+             front:`<strong>Tarefas que dependem de outras</strong><br>Use números para conectar.<br><br><strong>Exemplo:</strong> Tarefa 2 → após Tarefa 1`,
+             back:`<strong>Números</strong><br>Organize a sequência lógica.`},
+            {code:"F45",title:"Rotinas",cat:"realizacao",dur:5,xp:5,
+             front:`<strong>Tarefas periódicas</strong><br>Diárias, semanais, mensais.<br><br><strong>Exemplo:</strong> "Postar nas redes - toda segunda"`,
+             back:`<strong>Administrativas</strong><br>Automatize o que for possível.`},
+            {code:"F46",title:"Treinamentos",cat:"realizacao",dur:5,xp:5,
+             front:`<strong>Capacitação da equipe</strong><br>Tema, duração, instrutor, participantes.<br><br><strong>Exemplo:</strong> "Vendas - 2h - Ana"`,
+             back:`<strong>Passos</strong><br>Registre presença e avaliação.`},
+            {code:"F47",title:"Lista de Presenças",cat:"realizacao",dur:5,xp:5,
+             front:`<strong>Controle de frequência</strong><br>Nome, data, presença.<br><br><strong>Exemplo:</strong> "João - 10/10 - Presente"`,
+             back:`<strong>Frequência</strong><br>Identifique ausências recorrentes.`},
+            {code:"F48",title:"Avaliação",cat:"realizacao",dur:5,xp:5,
+             front:`<strong>Desempenho da equipe</strong><br>Notas de 1 a 5 em critérios.<br><br><strong>Pontos:</strong> [ ] [ ] [ ] [ ] [ ]`,
+             back:`<strong>Pontos</strong><br>Dê feedback construtivo.`},
+            {code:"F49",title:"Caixa",cat:"realizacao",dur:5,xp:5,
+             front:`<strong>Controle financeiro</strong><br>Entradas, saídas, saldo.<br><br><strong>Exemplo:</strong> "Entrada: R$1.000 - Venda"`,
+             back:`<strong>Entradas/saídas</strong><br>Registre diariamente.`},
+            {code:"F50",title:"Inventário",cat:"realizacao",dur:5,xp:5,
+             front:`<strong>Bens da empresa</strong><br>Item, quantidade, localização.<br><br><strong>Exemplo:</strong> "Mesa - 4 - Sala 1"`,
+             back:`<strong>Extravios</strong><br>Faça contagem periódica.`},
+            {code:"F51",title:"Estoque",cat:"realizacao",dur:5,xp:5,
+             front:`<strong>Produtos para venda</strong><br>Item, quantidade, preço.<br><br><strong>Exemplo:</strong> "Camiseta - 50 - R$50"`,
+             back:`<strong>Alinhar demandas</strong><br>Evite rupturas ou excessos.`},
+            {code:"F52",title:"Logística",cat:"realizacao",dur:5,xp:5,
+             front:`<strong>Entrega de produtos</strong><br>Origem, destino, prazo, transportadora.<br><br><strong>Exemplo:</strong> "SP → RJ - 3 dias"`,
+             back:`<strong>Origem/destino</strong><br>Acompanhe em tempo real.`},
+            {code:"F53",title:"Suporte",cat:"realizacao",dur:5,xp:5,
+             front:`<strong>Atendimento pós-venda</strong><br>Problema, solução, satisfação.<br><br><strong>Exemplo:</strong> "Troca de produto"`,
+             back:`<strong>Feedbacks</strong><br>Resolva rapidamente.`},
+            {code:"F54",title:"Manutenção",cat:"realizacao",dur:5,xp:5,
+             front:`<strong>Conservação de equipamentos</strong><br>Item, problema, responsável, data.<br><br><strong>Exemplo:</strong> "Computador - Tela quebrada - TI"`,
+             back:`<strong>Problema e responsável</strong><br>Programe manutenções preventivas.`}
+        ];
+
+        // === GERAR MATRIZ ===
+        const grid = document.getElementById('matrix-grid');
+        const categories = {
+            ajuda: cards.filter(c => c.cat === 'ajuda').map(c => c.code),
+            desafio: cards.filter(c => c.cat === 'desafio').map(c => c.code),
+            gerenciamento: cards.filter(c => c.cat === 'gerenciamento').map(c => c.code),
+            diagnostico: cards.filter(c => c.cat === 'diagnostico').map(c => c.code),
+            planejamento: cards.filter(c => c.cat === 'planejamento').map(c => c.code),
+            realizacao: cards.filter(c => c.cat === 'realizacao').map(c => c.code)
+        };
+
+        Object.entries(categories).forEach(([cat, codes]) => {
+            const row = document.createElement('div');
+            row.className = 'matrix-row';
+            codes.forEach(code => {
+                const cell = document.createElement('div');
+                cell.textContent = code;
+                const card = cards.find(c => c.code === code);
+                cell.className = `matrix-cell cat-${card.cat}`;
+                cell.onclick = () => showCard(code);
+                row.appendChild(cell);
+            });
+            grid.appendChild(row);
+        });
+
+        // === PREENCHER LISTAS ===
+        const lists = {
+            ajuda: document.getElementById('list-ajuda'),
+            desafio: document.getElementById('list-desafio'),
+            gerenciamento: document.getElementById('list-gerenciamento'),
+            diagnostico: document.getElementById('list-diagnostico'),
+            planejamento: document.getElementById('list-planejamento'),
+            realizacao: document.getElementById('list-realizacao')
+        };
+
+        cards.forEach(c => {
+            const div = document.createElement('div');
+            div.className = 'card-item';
+            div.innerHTML = `
+                <div class="card-circle">${c.code}</div>
+                <div class="card-text">
+                    <strong>${c.title}</strong>
+                    <small>${c.front.replace(/<[^>]*>/g, '').substring(0, 60)}...</small>
+                </div>
+            `;
+            div.onclick = () => showCard(c.code);
+            lists[c.cat].appendChild(div);
+        });
+
+        // === MOSTRAR CARD COM CONTEÚDO COMPLETO ===
+        function showCard(code) {
+            const card = cards.find(c => c.code === code);
+            const header = document.getElementById('card-header');
+            let bgColor = '#e67e22';
+            if (card.cat === 'ajuda') bgColor = '#f39c12';
+            else if (card.cat === 'desafio') bgColor = '#27ae60';
+            else if (card.cat === 'gerenciamento') bgColor = '#9b59b6';
+            else if (card.cat === 'diagnostico') bgColor = '#e74c3c';
+            else if (card.cat === 'planejamento') bgColor = '#f1c40f';
+            else if (card.cat === 'realizacao') bgColor = '#1e88e5';
+            header.style.background = bgColor;
+
+            document.getElementById('code-circle').textContent = card.code;
+            document.getElementById('card-title-text').textContent = card.title;
+            document.getElementById('front-content').innerHTML = card.front;
+            document.getElementById('back-content').innerHTML = card.back;
+            document.getElementById('card-detail').classList.add('active');
+            window.scrollTo({top: document.getElementById('card-detail').offsetTop - 100, behavior: 'smooth'});
+        }
+
+        function closeCard() {
+            document.getElementById('card-detail').classList.remove('active');
+        }
+
+        // === ROLAGEM SUAVE PARA SEÇÕES ===
+        function smoothScroll(target) {
+            event.preventDefault();
+            const element = document.querySelector(target);
+            const headerOffset = 90;
+            const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+            const offsetPosition = elementPosition - headerOffset;
+
+            window.scrollTo({
+                top: offsetPosition,
+                behavior: 'smooth'
+            });
+        }
+
+        // === RESETAR BORDA DO HEADER AO SAIR DO HOVER ===
+        document.querySelectorAll('.index-nav a').forEach(link => {
+            link.addEventListener('mouseleave', () => {
+                document.getElementById('main-header').style.borderBottomColor = '#e67e22';
+            });
+        });
+    </script>
+
+</body>
+</html>
