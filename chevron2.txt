@@ -1,0 +1,12 @@
+                        }
+                    }
+                    Icon(
+                        imageVector = Icons.Default.ChevronRight,
+                        contentDescription = "Abrir",
+                        tint = cardColor
+                    )
+                }
+            }
+        }
+    }
+}

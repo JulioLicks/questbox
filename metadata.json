@@ -1,0 +1,6 @@
+{
+  "name": "Questbox",
+  "description": "Jogo e metodologia visual de criação de projetos, planejamento, desafios.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

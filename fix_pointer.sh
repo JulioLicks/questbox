@@ -1,0 +1,69 @@
+cat << 'INNER_EOF' > replacement.txt
+                            detectTapGestures { tapOffset ->
+                                val center = Offset(size.width / 2f, size.height / 2f)
+                                val x = tapOffset.x - center.x
+                                val y = tapOffset.y - center.y
+                                val dist = Math.sqrt((x * x + y * y).toDouble()).toFloat()
+                                var touchAngle = Math.toDegrees(atan2(y.toDouble(), x.toDouble())).toFloat()
+                                if (touchAngle < 0) touchAngle += 360f
+                                
+                                val radius = size.width / 2f
+                                val whiteCircleRadius = radius * 0.45f
+                                
+                                val iconDist = radius * 0.65f
+                                val eyeDist = (radius + whiteCircleRadius) / 2f
+                                
+                                var clickedPhaseIcon: Phase? = null
+                                val phaseAngles = listOf(
+                                    Phase.DIAGNOSTICO to -30f,
+                                    Phase.PLANEJAMENTO to 90f,
+                                    Phase.REALIZACAO to 210f
+                                )
+                                for ((p, a) in phaseAngles) {
+                                    val icX = iconDist * cos(Math.toRadians(a.toDouble())).toFloat()
+                                    val icY = iconDist * sin(Math.toRadians(a.toDouble())).toFloat()
+                                    if (Math.sqrt(((x - icX)*(x - icX) + (y - icY)*(y - icY)).toDouble()) < 40f) {
+                                        clickedPhaseIcon = p
+                                        break
+                                    }
+                                }
+                                
+                                var clickedEyeIcon: Phase? = null
+                                val eyeAngles = listOf(
+                                    Phase.DIAGNOSTICO to -90f,
+                                    Phase.PLANEJAMENTO to 30f,
+                                    Phase.REALIZACAO to 150f
+                                )
+                                for ((p, a) in eyeAngles) {
+                                    val icX = eyeDist * cos(Math.toRadians(a.toDouble())).toFloat()
+                                    val icY = eyeDist * sin(Math.toRadians(a.toDouble())).toFloat()
+                                    if (Math.sqrt(((x - icX)*(x - icX) + (y - icY)*(y - icY)).toDouble()) < 40f) {
+                                        clickedEyeIcon = p
+                                        break
+                                    }
+                                }
+
+                                if (clickedEyeIcon != null) {
+                                    activeItem = CompassItem.AttributeItem(clickedEyeIcon)
+                                } else if (clickedPhaseIcon != null) {
+                                    activeItem = CompassItem.PhaseItem(clickedPhaseIcon)
+                                } else if (dist <= whiteCircleRadius) {
+                                    val adjustedAngle = (touchAngle + 120f) % 360f
+                                    val idx = (adjustedAngle / 60f).toInt()
+                                    val areas = Area.values()
+                                    if (idx in areas.indices) {
+                                        activeItem = CompassItem.AreaItem(areas[idx])
+                                    }
+                                } else {
+                                    val phase = when {
+                                        touchAngle >= 30f && touchAngle < 150f -> Phase.PLANEJAMENTO
+                                        touchAngle >= 150f && touchAngle < 270f -> Phase.REALIZACAO
+                                        else -> Phase.DIAGNOSTICO
+                                    }
+                                    activeItem = CompassItem.PhaseItem(phase)
+                                }
+                                onItemSelected(activeItem)
+                            }
+INNER_EOF
+sed -i -e '/detectTapGestures { tapOffset ->/,/onItemSelected(activeItem)/c\                            // REPLACEMENT_MARKER' /app/applet/app/src/main/java/com/example/ui/components/CompassWheel.kt
+sed -i -e '/\/\/ REPLACEMENT_MARKER/r replacement.txt' -e '/\/\/ REPLACEMENT_MARKER/d' /app/applet/app/src/main/java/com/example/ui/components/CompassWheel.kt
